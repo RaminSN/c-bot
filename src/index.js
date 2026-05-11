@@ -41,9 +41,15 @@ client.on(Events.MessageCreate, async (message) => {
     message.channel.sendTyping().catch(() => {});
   }, 5000);
 
+  const speaker =
+    message.member?.displayName ??
+    message.author.displayName ??
+    message.author.username;
+  const prompt = `[${speaker}] ${content}`;
+
   try {
     await message.channel.sendTyping();
-    const reply = await chat(message.channel.id, content);
+    const reply = await chat(message.channel.id, prompt);
     if (!reply) {
       await message.reply('(no response)');
       return;

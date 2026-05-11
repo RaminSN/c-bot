@@ -1,4 +1,11 @@
+import { readFileSync } from 'node:fs';
+import { fileURLToPath } from 'node:url';
 import { query } from '@anthropic-ai/claude-agent-sdk';
+
+const systemPrompt = readFileSync(
+  fileURLToPath(new URL('../prompts/system.md', import.meta.url)),
+  'utf8',
+).trim();
 
 const sessionByChannel = new Map();
 
@@ -12,6 +19,7 @@ export async function chat(channelId, userText) {
     allowedTools: [],
     hooks: {},
     settingSources: [],
+    systemPrompt,
   };
   if (resume) options.resume = resume;
 

@@ -2,7 +2,7 @@ import 'dotenv/config';
 import { Client, Events, GatewayIntentBits } from 'discord.js';
 import { chat, resetChannel } from './claude.js';
 
-const { DISCORD_TOKEN, CLAUDE_CODE_OAUTH_TOKEN, ALLOWED_GUILD_IDS } = process.env;
+const { DISCORD_TOKEN, CLAUDE_CODE_OAUTH_TOKEN } = process.env;
 
 if (!DISCORD_TOKEN) {
   console.error('Missing DISCORD_TOKEN in environment.');
@@ -12,13 +12,6 @@ if (!CLAUDE_CODE_OAUTH_TOKEN) {
   console.error('Missing CLAUDE_CODE_OAUTH_TOKEN in environment. Run: claude setup-token');
   process.exit(1);
 }
-
-const allowedGuilds = new Set(
-  (ALLOWED_GUILD_IDS || '')
-    .split(',')
-    .map((s) => s.trim())
-    .filter(Boolean),
-);
 
 const client = new Client({
   intents: [
@@ -30,16 +23,10 @@ const client = new Client({
 
 client.once(Events.ClientReady, (c) => {
   console.log(`Logged in as ${c.user.tag}`);
-  if (allowedGuilds.size === 0) {
-    console.warn('ALLOWED_GUILD_IDS is empty — bot will ignore every message.');
-  } else {
-    console.log('Allowed guild IDs:', [...allowedGuilds].join(', '));
-  }
 });
 
 client.on(Events.MessageCreate, async (message) => {
   if (message.author.bot) return;
-  if (!message.guildId || !allowedGuilds.has(message.guildId)) return;
 
   const content = message.content.trim();
   if (!content) return;

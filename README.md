@@ -23,9 +23,7 @@ subscription via `CLAUDE_CODE_OAUTH_TOKEN`, not with an Anthropic API key.
    - Scopes: check **bot**.
    - Bot Permissions: **View Channels**, **Send Messages**, **Read Message History**.
    - Copy the generated URL at the bottom, open it in a browser, and invite the bot to your server.
-4. Get your server's ID (this is the `ALLOWED_GUILD_IDS` value):
-   - In Discord: User Settings → Advanced → enable **Developer Mode**.
-   - Right-click your server icon → **Copy Server ID**.
+The bot will respond to messages in **every** channel of **every** server it's invited to. Only invite it to servers where you want it to participate.
 
 ## 2. Generate a Claude OAuth token
 
@@ -45,16 +43,12 @@ copy .env.example .env
 notepad .env
 ```
 
-Fill in all three values:
+Fill in both values:
 
 ```
 DISCORD_TOKEN=...
 CLAUDE_CODE_OAUTH_TOKEN=...
-ALLOWED_GUILD_IDS=123456789012345678
 ```
-
-Multiple servers can be comma-separated. The bot ignores every message from
-servers not in this list.
 
 ## 4. Install dependencies
 

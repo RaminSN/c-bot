@@ -79,14 +79,14 @@ These can be typed in any channel (or in a DM with the bot):
   T5's behavior, configuration, and suspected bugs. The bot may consult the
   codebase silently but will never paste code or file paths at the user.
   Requires `T5_PATH` to be set. Resets the channel's conversation.
-- `!default` — switch this channel back to the default persona. Resets the
-  channel's conversation.
+- `!hickey` — switch this channel back to the Hickey persona (the default
+  for any fresh channel). Resets the channel's conversation.
 - `!private` — bot opens a DM with you and you can continue the conversation
   there. Has its own conversation, separate from any channel.
 - `!reset` — clear this channel's conversation history without changing mode.
 
 Mode is per-channel and lives in memory only; on restart everything reverts
-to the default mode.
+to the Hickey persona.
 
 ### Restart announcements
 

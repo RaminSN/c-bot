@@ -12,7 +12,7 @@ function loadPrompt(file) {
 const globalRules = loadPrompt('global.md');
 
 const systemPrompts = {
-  default: `${loadPrompt('system.md')}\n\n${globalRules}`,
+  hickey: `${loadPrompt('hickey.md')}\n\n${globalRules}`,
   support: `${loadPrompt('support.md')}\n\n${globalRules}`,
 };
 
@@ -23,7 +23,7 @@ const sessionByChannel = new Map();
 const modeByChannel = new Map();
 
 export function getMode(channelId) {
-  return modeByChannel.get(channelId) ?? 'default';
+  return modeByChannel.get(channelId) ?? 'hickey';
 }
 
 export function setMode(channelId, mode) {

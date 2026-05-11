@@ -1,13 +1,14 @@
 import 'dotenv/config';
 import { ChannelType, Client, Events, GatewayIntentBits, Partials } from 'discord.js';
 import { chat, getMode, hasCodebase, resetChannel, setMode } from './claude.js';
+import { logInbound, logOutbound } from './log.js';
 
 const { DISCORD_TOKEN, CLAUDE_CODE_OAUTH_TOKEN } = process.env;
 
 const COMMANDS_LIST = [
   '**Available commands**',
   '• `!commands` — show this list',
-  '• `!default` — switch this channel to the default persona',
+  '• `!hickey` — switch this channel to the Hickey persona (the default)',
   '• `!support` — switch this channel to T5 support (non-developer assistant)',
   '• `!private` — open a DM with the bot for a private conversation',
   '• `!reset` — clear this channel\'s conversation history without changing mode',
@@ -32,6 +33,16 @@ const client = new Client({
   partials: [Partials.Channel],
 });
 
+async function sendAndLog(channel, content) {
+  await channel.send(content);
+  logOutbound(channel, content);
+}
+
+async function replyAndLog(message, content) {
+  await message.reply(content);
+  logOutbound(message.channel, content);
+}
+
 client.once(Events.ClientReady, async (c) => {
   console.log(`Logged in as ${c.user.tag}`);
   const announcement = [
@@ -46,7 +57,7 @@ client.once(Events.ClientReady, async (c) => {
       const perms = channel.permissionsFor(c.user);
       if (!perms?.has(['ViewChannel', 'SendMessages'])) continue;
       try {
-        await channel.send(announcement);
+        await sendAndLog(channel, announcement);
       } catch (err) {
         console.warn(
           `Failed to announce in #${channel.name} (${channel.id}):`,
@@ -63,40 +74,43 @@ client.on(Events.MessageCreate, async (message) => {
   const content = message.content.trim();
   if (!content) return;
 
+  logInbound(message);
+
   if (content === '!commands') {
     const mode = getMode(message.channel.id);
-    await message.reply(`${COMMANDS_LIST}\n\nCurrent mode: **${mode}**`);
+    await replyAndLog(message, `${COMMANDS_LIST}\n\nCurrent mode: **${mode}**`);
     return;
   }
 
   if (content === '!support') {
     if (!hasCodebase) {
-      await message.reply('Support mode requires `T5_PATH` to be set in `.env`.');
+      await replyAndLog(message, 'Support mode requires `T5_PATH` to be set in `.env`.');
       return;
     }
     setMode(message.channel.id, 'support');
-    await message.reply('Switched to T5 support mode for this channel. Conversation reset.');
+    await replyAndLog(message, 'Switched to T5 support mode for this channel. Conversation reset.');
     return;
   }
 
-  if (content === '!default') {
-    setMode(message.channel.id, 'default');
-    await message.reply('Switched to default mode for this channel. Conversation reset.');
+  if (content === '!hickey') {
+    setMode(message.channel.id, 'hickey');
+    await replyAndLog(message, 'Switched to Hickey mode for this channel. Conversation reset.');
     return;
   }
 
   if (content === '!private') {
     if (message.channel.type === ChannelType.DM) {
-      await message.reply('We are already in a private channel, Soldat.');
+      await replyAndLog(message, 'We are already in a private channel, Soldat.');
       return;
     }
     try {
       const dm = await message.author.createDM();
-      await dm.send('Acknowledged. Continue here at your discretion.');
-      await message.reply('DM sent.');
+      await sendAndLog(dm, 'Acknowledged. Continue here at your discretion.');
+      await replyAndLog(message, 'DM sent.');
     } catch (err) {
       console.error('Failed to open DM:', err);
-      await message.reply(
+      await replyAndLog(
+        message,
         'I could not DM you. Check **User Settings → Privacy & Safety → "Allow direct messages from server members"** is enabled, then try again.',
       );
     }
@@ -105,7 +119,7 @@ client.on(Events.MessageCreate, async (message) => {
 
   if (content === '!reset') {
     resetChannel(message.channel.id);
-    await message.reply('Channel conversation cleared.');
+    await replyAndLog(message, 'Channel conversation cleared.');
     return;
   }
 
@@ -123,16 +137,16 @@ client.on(Events.MessageCreate, async (message) => {
     await message.channel.sendTyping();
     const reply = await chat(message.channel.id, prompt);
     if (!reply) {
-      await message.reply('(no response)');
+      await replyAndLog(message, '(no response)');
       return;
     }
     for (const chunk of chunkForDiscord(reply)) {
-      await message.channel.send(chunk);
+      await sendAndLog(message.channel, chunk);
     }
   } catch (err) {
     console.error('Error from Claude:', err);
     const msg = err?.message ?? String(err);
-    await message.reply(`Error: ${msg.slice(0, 1900)}`);
+    await replyAndLog(message, `Error: ${msg.slice(0, 1900)}`);
   } finally {
     clearInterval(typingInterval);
   }

@@ -62,6 +62,13 @@ T5_PATH=C:\Users\RaminSoltanzadeh\Documents\GitHub\T5
 
 Leave `T5_PATH` empty (or omit it) to run text-only with no file access.
 
+The bot also has read-only git access when `T5_PATH` is set, scoped to that
+repository: `git log`, `git show`, `git blame`, `git diff`, `git status`,
+`git branch`, `git tag`, `git reflog`, `git rev-parse`, `git ls-files`,
+`git ls-tree`. No mutating git operations and no other shell commands —
+the SDK runs in `dontAsk` permission mode, which denies anything not on
+the allowlist.
+
 ### Commands
 
 These can be typed in any channel (or in a DM with the bot):

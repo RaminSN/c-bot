@@ -9,9 +9,11 @@ function loadPrompt(file) {
   ).trim();
 }
 
+const globalRules = loadPrompt('global.md');
+
 const systemPrompts = {
-  default: loadPrompt('system.md'),
-  support: loadPrompt('support.md'),
+  default: `${loadPrompt('system.md')}\n\n${globalRules}`,
+  support: `${loadPrompt('support.md')}\n\n${globalRules}`,
 };
 
 const codebasePath = process.env.T5_PATH?.trim() || null;
@@ -43,10 +45,26 @@ export async function chat(channelId, userText) {
   };
   if (codebasePath) {
     options.cwd = codebasePath;
-    options.allowedTools = ['Read', 'Glob', 'Grep'];
-    options.permissionMode = 'bypassPermissions';
+    options.allowedTools = [
+      'Read',
+      'Glob',
+      'Grep',
+      'Bash(git log *)',
+      'Bash(git show *)',
+      'Bash(git blame *)',
+      'Bash(git diff *)',
+      'Bash(git status*)',
+      'Bash(git branch *)',
+      'Bash(git tag *)',
+      'Bash(git reflog *)',
+      'Bash(git rev-parse *)',
+      'Bash(git ls-files *)',
+      'Bash(git ls-tree *)',
+    ];
+    options.permissionMode = 'dontAsk';
   } else {
     options.allowedTools = [];
+    options.permissionMode = 'dontAsk';
   }
   if (resume) options.resume = resume;
 

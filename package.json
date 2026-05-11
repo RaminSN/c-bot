@@ -10,5 +10,10 @@
   },
   "engines": {
     "node": ">=20"
+  },
+  "dependencies": {
+    "@anthropic-ai/claude-agent-sdk": "^0.2.138",
+    "discord.js": "^14.26.4",
+    "dotenv": "^17.4.2"
   }
 }

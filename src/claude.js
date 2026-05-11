@@ -8,7 +8,11 @@ export function resetChannel(channelId) {
 
 export async function chat(channelId, userText) {
   const resume = sessionByChannel.get(channelId);
-  const options = { allowedTools: [] };
+  const options = {
+    allowedTools: [],
+    hooks: {},
+    settingSources: [],
+  };
   if (resume) options.resume = resume;
 
   let finalText = '';

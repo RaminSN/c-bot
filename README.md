@@ -62,6 +62,25 @@ T5_PATH=C:\Users\RaminSoltanzadeh\Documents\GitHub\T5
 
 Leave `T5_PATH` empty (or omit it) to run text-only with no file access.
 
+### Commands
+
+These can be typed in any channel (or in a DM with the bot):
+
+- `!commands` — list available commands and show the current mode.
+- `!support` — switch this channel into **T5 support mode**: the bot becomes
+  a patient, plain-language assistant for non-developer users asking about
+  T5's behavior, configuration, and suspected bugs. The bot may consult the
+  codebase silently but will never paste code or file paths at the user.
+  Requires `T5_PATH` to be set. Resets the channel's conversation.
+- `!default` — switch this channel back to the default persona. Resets the
+  channel's conversation.
+- `!private` — bot opens a DM with you and you can continue the conversation
+  there. Has its own conversation, separate from any channel.
+- `!reset` — clear this channel's conversation history without changing mode.
+
+Mode is per-channel and lives in memory only; on restart everything reverts
+to the default mode.
+
 ### Restart announcements
 
 On startup the bot posts a single "back on duty, context wiped" line into

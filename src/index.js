@@ -1,6 +1,6 @@
 import 'dotenv/config';
 import { ChannelType, Client, Events, GatewayIntentBits, Partials } from 'discord.js';
-import { chat, resetChannel } from './claude.js';
+import { chat, getMode, hasCodebase, resetChannel, setMode } from './claude.js';
 
 const { DISCORD_TOKEN, CLAUDE_CODE_OAUTH_TOKEN } = process.env;
 
@@ -49,6 +49,39 @@ client.on(Events.MessageCreate, async (message) => {
 
   const content = message.content.trim();
   if (!content) return;
+
+  if (content === '!commands') {
+    const mode = getMode(message.channel.id);
+    await message.reply(
+      [
+        '**Available commands**',
+        '• `!commands` — show this list',
+        '• `!default` — switch this channel to the default persona',
+        '• `!support` — switch this channel to T5 support (non-developer assistant)',
+        '• `!private` — open a DM with the bot for a private conversation',
+        '• `!reset` — clear this channel\'s conversation history without changing mode',
+        '',
+        `Current mode: **${mode}**`,
+      ].join('\n'),
+    );
+    return;
+  }
+
+  if (content === '!support') {
+    if (!hasCodebase) {
+      await message.reply('Support mode requires `T5_PATH` to be set in `.env`.');
+      return;
+    }
+    setMode(message.channel.id, 'support');
+    await message.reply('Switched to T5 support mode for this channel. Conversation reset.');
+    return;
+  }
+
+  if (content === '!default') {
+    setMode(message.channel.id, 'default');
+    await message.reply('Switched to default mode for this channel. Conversation reset.');
+    return;
+  }
 
   if (content === '!private') {
     if (message.channel.type === ChannelType.DM) {

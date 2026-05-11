@@ -2,25 +2,44 @@ import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { query } from '@anthropic-ai/claude-agent-sdk';
 
-const systemPrompt = readFileSync(
-  fileURLToPath(new URL('../prompts/system.md', import.meta.url)),
-  'utf8',
-).trim();
+function loadPrompt(file) {
+  return readFileSync(
+    fileURLToPath(new URL(`../prompts/${file}`, import.meta.url)),
+    'utf8',
+  ).trim();
+}
+
+const systemPrompts = {
+  default: loadPrompt('system.md'),
+  support: loadPrompt('support.md'),
+};
 
 const codebasePath = process.env.T5_PATH?.trim() || null;
+export const hasCodebase = Boolean(codebasePath);
 
 const sessionByChannel = new Map();
+const modeByChannel = new Map();
+
+export function getMode(channelId) {
+  return modeByChannel.get(channelId) ?? 'default';
+}
+
+export function setMode(channelId, mode) {
+  modeByChannel.set(channelId, mode);
+  sessionByChannel.delete(channelId);
+}
 
 export function resetChannel(channelId) {
   sessionByChannel.delete(channelId);
 }
 
 export async function chat(channelId, userText) {
+  const mode = getMode(channelId);
   const resume = sessionByChannel.get(channelId);
   const options = {
     hooks: {},
     settingSources: [],
-    systemPrompt,
+    systemPrompt: systemPrompts[mode],
   };
   if (codebasePath) {
     options.cwd = codebasePath;

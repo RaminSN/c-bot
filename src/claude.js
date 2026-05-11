@@ -7,6 +7,8 @@ const systemPrompt = readFileSync(
   'utf8',
 ).trim();
 
+const codebasePath = process.env.T5_PATH?.trim() || null;
+
 const sessionByChannel = new Map();
 
 export function resetChannel(channelId) {
@@ -16,11 +18,17 @@ export function resetChannel(channelId) {
 export async function chat(channelId, userText) {
   const resume = sessionByChannel.get(channelId);
   const options = {
-    allowedTools: [],
     hooks: {},
     settingSources: [],
     systemPrompt,
   };
+  if (codebasePath) {
+    options.cwd = codebasePath;
+    options.allowedTools = ['Read', 'Glob', 'Grep'];
+    options.permissionMode = 'bypassPermissions';
+  } else {
+    options.allowedTools = [];
+  }
   if (resume) options.resume = resume;
 
   let finalText = '';

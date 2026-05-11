@@ -43,12 +43,31 @@ copy .env.example .env
 notepad .env
 ```
 
-Fill in both values:
+Fill in the required values:
 
 ```
 DISCORD_TOKEN=...
 CLAUDE_CODE_OAUTH_TOKEN=...
 ```
+
+### Optional: give the bot read access to a codebase
+
+Add `T5_PATH` pointing at an absolute folder path. With this set, the bot
+gains `Read`, `Glob`, and `Grep` tools rooted at that path — it can search
+and read files (but never modify them) when a question requires it:
+
+```
+T5_PATH=C:\Users\RaminSoltanzadeh\Documents\GitHub\T5
+```
+
+Leave `T5_PATH` empty (or omit it) to run text-only with no file access.
+
+The bot is instructed (via the system prompt) to refuse reading signing
+materials (`*.pfx`, `*.key`, `*.pem`), config files that may carry
+credentials (`appsettings.*.json`, `secrets.json`, `.env*`), and noise
+(`bin/`, `obj/`, `node_modules/`, `.git/`). This is a soft guardrail, not
+a sandbox — anyone with shell-level access to the host can read anything
+the bot's user can read.
 
 ## 4. Install dependencies
 

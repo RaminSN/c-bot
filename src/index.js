@@ -37,6 +37,10 @@ client.on(Events.MessageCreate, async (message) => {
     return;
   }
 
+  const typingInterval = setInterval(() => {
+    message.channel.sendTyping().catch(() => {});
+  }, 5000);
+
   try {
     await message.channel.sendTyping();
     const reply = await chat(message.channel.id, content);
@@ -51,6 +55,8 @@ client.on(Events.MessageCreate, async (message) => {
     console.error('Error from Claude:', err);
     const msg = err?.message ?? String(err);
     await message.reply(`Error: ${msg.slice(0, 1900)}`);
+  } finally {
+    clearInterval(typingInterval);
   }
 });
 

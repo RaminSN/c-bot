@@ -4,6 +4,15 @@ import { chat, getMode, hasCodebase, resetChannel, setMode } from './claude.js';
 
 const { DISCORD_TOKEN, CLAUDE_CODE_OAUTH_TOKEN } = process.env;
 
+const COMMANDS_LIST = [
+  '**Available commands**',
+  '• `!commands` — show this list',
+  '• `!default` — switch this channel to the default persona',
+  '• `!support` — switch this channel to T5 support (non-developer assistant)',
+  '• `!private` — open a DM with the bot for a private conversation',
+  '• `!reset` — clear this channel\'s conversation history without changing mode',
+].join('\n');
+
 if (!DISCORD_TOKEN) {
   console.error('Missing DISCORD_TOKEN in environment.');
   process.exit(1);
@@ -25,8 +34,12 @@ const client = new Client({
 
 client.once(Events.ClientReady, async (c) => {
   console.log(`Logged in as ${c.user.tag}`);
-  const announcement =
-    '**Server restarted.**\n*Returned to my post. Prior dispatches discarded — every channel begins clean.*';
+  const announcement = [
+    '**Server restarted.**',
+    '*Returned to my post. Prior dispatches discarded — every channel begins clean.*',
+    '',
+    COMMANDS_LIST,
+  ].join('\n');
   for (const guild of c.guilds.cache.values()) {
     for (const channel of guild.channels.cache.values()) {
       if (!channel.isTextBased()) continue;
@@ -52,18 +65,7 @@ client.on(Events.MessageCreate, async (message) => {
 
   if (content === '!commands') {
     const mode = getMode(message.channel.id);
-    await message.reply(
-      [
-        '**Available commands**',
-        '• `!commands` — show this list',
-        '• `!default` — switch this channel to the default persona',
-        '• `!support` — switch this channel to T5 support (non-developer assistant)',
-        '• `!private` — open a DM with the bot for a private conversation',
-        '• `!reset` — clear this channel\'s conversation history without changing mode',
-        '',
-        `Current mode: **${mode}**`,
-      ].join('\n'),
-    );
+    await message.reply(`${COMMANDS_LIST}\n\nCurrent mode: **${mode}**`);
     return;
   }
 

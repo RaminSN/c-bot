@@ -1,5 +1,5 @@
 import 'dotenv/config';
-import { Client, Events, GatewayIntentBits } from 'discord.js';
+import { ChannelType, Client, Events, GatewayIntentBits, Partials } from 'discord.js';
 import { chat, resetChannel } from './claude.js';
 
 const { DISCORD_TOKEN, CLAUDE_CODE_OAUTH_TOKEN } = process.env;
@@ -17,12 +17,31 @@ const client = new Client({
   intents: [
     GatewayIntentBits.Guilds,
     GatewayIntentBits.GuildMessages,
+    GatewayIntentBits.DirectMessages,
     GatewayIntentBits.MessageContent,
   ],
+  partials: [Partials.Channel],
 });
 
-client.once(Events.ClientReady, (c) => {
+client.once(Events.ClientReady, async (c) => {
   console.log(`Logged in as ${c.user.tag}`);
+  const announcement =
+    '**Server restarted.**\n*Returned to my post. Prior dispatches discarded — every channel begins clean.*';
+  for (const guild of c.guilds.cache.values()) {
+    for (const channel of guild.channels.cache.values()) {
+      if (!channel.isTextBased()) continue;
+      const perms = channel.permissionsFor(c.user);
+      if (!perms?.has(['ViewChannel', 'SendMessages'])) continue;
+      try {
+        await channel.send(announcement);
+      } catch (err) {
+        console.warn(
+          `Failed to announce in #${channel.name} (${channel.id}):`,
+          err.message,
+        );
+      }
+    }
+  }
 });
 
 client.on(Events.MessageCreate, async (message) => {
@@ -30,6 +49,24 @@ client.on(Events.MessageCreate, async (message) => {
 
   const content = message.content.trim();
   if (!content) return;
+
+  if (content === '!private') {
+    if (message.channel.type === ChannelType.DM) {
+      await message.reply('We are already in a private channel, Soldat.');
+      return;
+    }
+    try {
+      const dm = await message.author.createDM();
+      await dm.send('Acknowledged. Continue here at your discretion.');
+      await message.reply('DM sent.');
+    } catch (err) {
+      console.error('Failed to open DM:', err);
+      await message.reply(
+        'I could not DM you. Check **User Settings → Privacy & Safety → "Allow direct messages from server members"** is enabled, then try again.',
+      );
+    }
+    return;
+  }
 
   if (content === '!reset') {
     resetChannel(message.channel.id);

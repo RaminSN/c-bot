@@ -62,6 +62,14 @@ T5_PATH=C:\Users\RaminSoltanzadeh\Documents\GitHub\T5
 
 Leave `T5_PATH` empty (or omit it) to run text-only with no file access.
 
+### Restart announcements
+
+On startup the bot posts a single "back on duty, context wiped" line into
+every text channel it has send-permission for, across every server it's in.
+This is so coworkers know a restart happened and channel conversations have
+been reset. DMs are not announced into (they aren't enumerable at startup
+without persistence). No configuration is required.
+
 The bot is instructed (via the system prompt) to refuse reading signing
 materials (`*.pfx`, `*.key`, `*.pem`), config files that may carry
 credentials (`appsettings.*.json`, `secrets.json`, `.env*`), and noise

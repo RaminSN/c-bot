@@ -68,13 +68,28 @@ client.once(Events.ClientReady, async (c) => {
   }
 });
 
+const SUPPORTED_IMAGE_TYPES = new Set(['image/jpeg', 'image/png', 'image/gif', 'image/webp']);
+
+function extractImages(message) {
+  if (!message.attachments?.size) return [];
+  const images = [];
+  for (const att of message.attachments.values()) {
+    const type = att.contentType?.split(';')[0]?.trim().toLowerCase();
+    if (type && SUPPORTED_IMAGE_TYPES.has(type)) {
+      images.push({ url: att.url, contentType: type });
+    }
+  }
+  return images;
+}
+
 client.on(Events.MessageCreate, async (message) => {
   if (message.author.bot) return;
 
   const content = message.content.trim();
-  if (!content) return;
+  const images = extractImages(message);
+  if (!content && images.length === 0) return;
 
-  logInbound(message);
+  logInbound(message, images);
 
   if (content === '!commands') {
     const mode = getMode(message.channel.id);
@@ -131,11 +146,11 @@ client.on(Events.MessageCreate, async (message) => {
     message.member?.displayName ??
     message.author.displayName ??
     message.author.username;
-  const prompt = `[${speaker}] ${content}`;
+  const text = content ? `[${speaker}] ${content}` : `[${speaker}]`;
 
   try {
     await message.channel.sendTyping();
-    const reply = await chat(message.channel.id, prompt);
+    const reply = await chat(message.channel.id, { text, images });
     if (!reply) {
       await replyAndLog(message, '(no response)');
       return;

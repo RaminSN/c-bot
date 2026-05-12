@@ -25,12 +25,13 @@ function write(line) {
   stream.write(line + '\n');
 }
 
-export function logInbound(message) {
+export function logInbound(message, images = []) {
   const channelLabel = describeChannel(message.channel);
   const speaker =
     message.member?.displayName ?? message.author.displayName ?? message.author.username;
   const ts = new Date().toISOString();
-  write(`[${ts}] << ${channelLabel} <${speaker}>: ${message.content}`);
+  const imageNote = images.length ? ` [+${images.length} image${images.length === 1 ? '' : 's'}]` : '';
+  write(`[${ts}] << ${channelLabel} <${speaker}>: ${message.content}${imageNote}`);
 }
 
 export function logOutbound(channel, content) {

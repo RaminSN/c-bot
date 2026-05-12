@@ -35,7 +35,8 @@ export function resetChannel(channelId) {
   sessionByChannel.delete(channelId);
 }
 
-export async function chat(channelId, userText) {
+export async function chat(channelId, input) {
+  const { text = '', images = [] } = typeof input === 'string' ? { text: input } : input;
   const mode = getMode(channelId);
   const resume = sessionByChannel.get(channelId);
   const options = {
@@ -68,9 +69,11 @@ export async function chat(channelId, userText) {
   }
   if (resume) options.resume = resume;
 
+  const prompt = images.length === 0 ? text : buildStructuredPrompt(text, images);
+
   let finalText = '';
 
-  for await (const message of query({ prompt: userText, options })) {
+  for await (const message of query({ prompt, options })) {
     if (message.type === 'system' && message.subtype === 'init' && message.session_id) {
       sessionByChannel.set(channelId, message.session_id);
     } else if (message.type === 'result' && typeof message.result === 'string') {
@@ -79,4 +82,17 @@ export async function chat(channelId, userText) {
   }
 
   return finalText;
+}
+
+async function* buildStructuredPrompt(text, images) {
+  const content = [];
+  if (text) content.push({ type: 'text', text });
+  for (const img of images) {
+    content.push({ type: 'image', source: { type: 'url', url: img.url } });
+  }
+  yield {
+    type: 'user',
+    message: { role: 'user', content },
+    parent_tool_use_id: null,
+  };
 }

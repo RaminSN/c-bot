@@ -69,6 +69,27 @@ repository: `git log`, `git show`, `git blame`, `git diff`, `git status`,
 the SDK runs in `dontAsk` permission mode, which denies anything not on
 the allowlist.
 
+### Optional: Azure DevOps access
+
+Set `ADO_ORG` to your Azure DevOps organization name (the bit after
+`dev.azure.com/` in your ADO URL) and `ADO_PAT` to a Personal Access Token.
+With both present, the bot launches Microsoft's official
+[`@azure-devops/mcp`](https://github.com/microsoft/azure-devops-mcp) server
+as a subprocess and exposes its tools to Claude — work items, repos, pull
+requests, pipelines, wikis.
+
+```
+ADO_ORG=contoso
+ADO_PAT=your_pat_here
+ADO_EMAIL=c-bot         # optional; any non-empty string works
+```
+
+What the bot can actually do is determined by your PAT's scope, not by the
+bot. For read-only access, create the PAT with only `Read` scopes for the
+areas you want (Work Items, Code, Build, Wiki, etc.). The bot base64-encodes
+`ADO_EMAIL:ADO_PAT` and passes it to the MCP server as
+`PERSONAL_ACCESS_TOKEN` — you don't need to encode it yourself.
+
 ### Commands
 
 These can be typed in any channel (or in a DM with the bot):

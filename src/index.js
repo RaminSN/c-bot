@@ -150,9 +150,9 @@ client.on(Events.MessageCreate, async (message) => {
 
   try {
     await message.channel.sendTyping();
-    const reply = await chat(message.channel.id, { text, images });
+    const { text: reply, sentFiles } = await chat(message.channel.id, { text, images }, message.channel);
     if (!reply) {
-      await replyAndLog(message, '(no response)');
+      if (sentFiles === 0) await replyAndLog(message, '(no response)');
       return;
     }
     for (const chunk of chunkForDiscord(reply)) {
